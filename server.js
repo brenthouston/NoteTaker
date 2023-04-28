@@ -7,7 +7,7 @@ const fs = require('fs')
 
 app.use(express.static("public"))
 
-const savedNotes =require('./db/db.json')
+
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -20,31 +20,45 @@ app.get('/notes',(req,res)=>{
 })
 
 app.post('/api/notes', (req,res)=>{
-    console.log(req.body);
-    savedNotes.push(req.body)
-    const { title, text } = req.body;
-    if (title && text) {
-        const newNote = {
-            id: uuid(),
-            title,
-            text
-        };
-        const response = {
-            status: 'success',
-            body: newNote
-        };
-        console.log(response);
-        res.status(201).json('Error in posting review');
-    }
+   fs.readFile('./db/db.json', 'utf-8', (err,data)=> {
+    if(err){
+        return req.status(500).json({msg:"error reading database."})
+    }else{
+    const note = JSON.parse(data)
+         const newNote = {
+             id: uuid(),
+             title:req.body.title,
+             text:req.body.text
+         };
+         console.log(newNote);
+         note.push(newNote)
+         fs.writeFile("./db/db.json",JSON.stringify(note,null,4), (err)=>{
+            if(err){
+                return res.status(500).json({msg:"Error reading database"})
+            }else{
+                return res.json(newNote)
+            }
+         })
+     }
+   })
    
 })
 
 app.get ('/api/notes',(req,res)=> {
-    res.json(savedNotes);
+    fs.readFile('./db/db.json', 'utf-8',(err, data) => {
+        if(err){
+            return res.status(500).json({msg:"error reading database."})
+        }else {
+            const dataArr = JSON.parse(data);
+            return res.json(dataArr)
+             
+        }
+    })
+    // res.json(savedNotes);
 })
 
 //Route for /*
-app.get('*',(req,res)=> {
+app.get('/*',(req,res)=> {
     res.sendFile(path.join(__dirname,"./public/index.html"))
 
 })
@@ -56,7 +70,7 @@ app.get('*',(req,res)=> {
 
 // listen on port 3001
 app.listen(PORT,()=> {
-    console.log('listening on port '+ PORT);
+    console.log('listening on http://localhost:'+ PORT);
 })
 
 
