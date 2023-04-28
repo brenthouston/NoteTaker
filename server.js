@@ -2,7 +2,7 @@ const express = require('express');
 const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3001
-const uuid = require('./helpers/uuid')
+const uuid = require('./helper/uuid.js');
 const fs = require('fs')
 
 app.use(express.static("public"))
@@ -21,6 +21,7 @@ app.get('/notes',(req,res)=>{
 
 app.post('/api/notes', (req,res)=>{
     console.log(req.body);
+    savedNotes.push(req.body)
     const { title, text } = req.body;
     if (title && text) {
         const newNote = {
@@ -35,8 +36,7 @@ app.post('/api/notes', (req,res)=>{
         console.log(response);
         res.status(201).json('Error in posting review');
     }
-    savedNotes.push(req.body)
-    res.send('posted note')
+   
 })
 
 app.get ('/api/notes',(req,res)=> {
